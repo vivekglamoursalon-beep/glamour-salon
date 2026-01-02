@@ -1,0 +1,3539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Glamour Salon & Spa | Booking Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CHANGE 1: ADD EMAILJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#d4a574">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+ 
+    <style>
+        /* [ALL YOUR EXISTING CSS STYLES REMAIN HERE - NO CHANGES NEEDED] */
+        :root {
+            --primary: #d4a574;
+            --primary-dark: #b08a5e;
+            --secondary: #8a6d46;
+            --accent: #f8f1e5;
+            --dark: #2c2416;
+            --light: #fff;
+            --gray: #f5f5f5;
+            --success: #4CAF50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --info: #2196F3;
+            --shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding: 0;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* [REST OF YOUR CSS REMAINS UNCHANGED - SAME AS BEFORE] */
+        /* iOS Safe Areas */
+        @supports (padding: max(0px)) {
+            body, header, footer {
+                padding-left: min(0px, env(safe-area-inset-left));
+                padding-right: min(0px, env(safe-area-inset-right));
+            }
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            max-width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .install-prompt button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .install-prompt button.secondary {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Mobile Bottom Navigation */
+        .mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 5px;
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: none;
+        }
+        
+        .mobile-bottom-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 12px;
+            flex: 1;
+            padding: 8px 5px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .mobile-bottom-nav a.active {
+            color: var(--primary);
+            background: rgba(212, 165, 116, 0.1);
+        }
+        
+        .mobile-bottom-nav i {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        /* Header & Navigation */
+        header {
+            background-color: var(--light);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding-top: var(--safe-top);
+            transition: all 0.3s;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        
+        .logo-img {
+            height: 40px;
+            width: auto;
+            border-radius: 8px;
+        }
+        
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(18px, 4vw, 28px);
+            font-weight: 600;
+            color: var(--secondary);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .logo-text span {
+            color: var(--primary);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-menu li {
+            margin-left: 0;
+        }
+        
+        .nav-menu a, .nav-menu button {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 14px;
+            transition: color 0.3s;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            padding: 5px;
+            white-space: nowrap;
+        }
+        
+        .nav-menu a:hover, .nav-menu button:hover {
+            color: var(--primary);
+        }
+        
+        .book-btn {
+            background-color: var(--primary);
+            color: var(--light);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .book-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--dark);
+            padding: 5px;
+        }
+        
+        /* Login/Logout buttons - FIXED TO BE ALWAYS VISIBLE */
+        .login-btn, .logout-btn, .share-btn {
+            color: var(--primary);
+            font-weight: 600;
+            padding: 8px 12px !important;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover, .share-btn:hover {
+            background-color: rgba(212, 165, 116, 0.1);
+        }
+        
+        .logout-btn {
+            color: var(--danger);
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        .share-btn {
+            color: var(--info);
+        }
+        
+        .share-btn:hover {
+            background-color: rgba(33, 150, 243, 0.1);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44, 36, 22, 0.8), rgba(44, 36, 22, 0.8)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--light);
+            padding: calc(80px + var(--safe-top)) 20px 80px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(32px, 5vw, 48px);
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: clamp(16px, 2vw, 18px);
+            max-width: 700px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .hero-btns {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--light);
+            padding: 14px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--light);
+            padding: 14px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border: 2px solid var(--light);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 50px;
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 60px;
+        }
+        
+        .section-title h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(28px, 4vw, 36px);
+            color: var(--secondary);
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+        
+        .section-title p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        /* Services Section */
+        .services-section {
+            padding: 60px 0;
+            background-color: var(--light);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .service-card {
+            background-color: var(--light);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .service-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .service-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .service-content h3 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+            font-size: 20px;
+            line-height: 1.3;
+        }
+        
+        .service-content p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            flex: 1;
+        }
+        
+        .service-price {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 18px;
+            margin-top: auto;
+        }
+        
+        /* Owner Section */
+        .owner-section {
+            padding: 60px 0;
+            background-color: var(--accent);
+        }
+        
+        .owner-container {
+            background-color: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .owner-img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .owner-info h3 {
+            color: var(--secondary);
+            font-size: clamp(24px, 3vw, 28px);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .owner-info .title {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .contact-details {
+            margin-top: 20px;
+        }
+        
+        .contact-details div {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        
+        .contact-details i {
+            color: var(--primary);
+            width: 20px;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+        
+        /* Booking Dashboard */
+        .booking-dashboard {
+            padding: 60px 0;
+            background-color: var(--accent);
+            padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+        }
+        
+        .dashboard-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .dashboard-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Customer View: Available Slots */
+        .available-slots-container {
+            background-color: var(--light);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .calendar-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .current-week {
+            font-size: clamp(16px, 3vw, 20px);
+            font-weight: 600;
+            color: var(--secondary);
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .week-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .day-header {
+            text-align: center;
+            padding: 12px 5px;
+            background-color: var(--accent);
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 14px;
+            min-width: 40px;
+        }
+        
+        .week-slots {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .day-slots {
+            min-height: 200px;
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-width: 130px;
+        }
+        
+        .day-date {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--accent);
+            font-size: 14px;
+        }
+        
+        .time-slots-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 150px;
+        }
+        
+        .time-slots-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        .time-slots-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        .time-slot-item {
+            padding: 8px 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .time-slot-item.available {
+            background-color: #e8f5e9;
+            color: var(--success);
+            border: 1px solid #c8e6c9;
+        }
+        
+        .time-slot-item.booked {
+            background-color: #f5f5f5;
+            color: #999;
+            border: 1px solid #eee;
+            cursor: not-allowed;
+        }
+        
+        .time-slot-item.selected {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.05);
+            border-color: var(--primary-dark);
+        }
+        
+        .time-slot-item.peak {
+            background-color: #fff3e0;
+            color: var(--warning);
+            border: 1px solid #ffe0b2;
+        }
+        
+        .slot-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: rgba(248, 241, 229, 0.5);
+            border-radius: 10px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        /* Owner View: Booking Management */
+        .owner-bookings-container {
+            background-color: var(--light);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .booking-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            background-color: var(--accent);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            min-width: 800px;
+        }
+        
+        .bookings-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            margin: -1px;
+        }
+        
+        .bookings-table th {
+            background-color: var(--accent);
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 14px;
+            position: sticky;
+            left: 0;
+        }
+        
+        .bookings-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--accent);
+            font-size: 14px;
+        }
+        
+        .booking-status {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 70px;
+        }
+        
+        .status-confirmed {
+            background-color: #e8f5e9;
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background-color: #fff3e0;
+            color: var(--warning);
+        }
+        
+        .status-cancelled {
+            background-color: #ffebee;
+            color: var(--danger);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .btn-confirm {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-edit {
+            background-color: var(--info);
+            color: white;
+        }
+        
+        /* Quick Booking Modal */
+        .booking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top, 0px));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        }
+        
+        .booking-modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 500px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--accent);
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: var(--accent);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: border 0.3s;
+            background: white;
+            -webkit-appearance: none;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(212, 165, 116, 0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        /* Login System */
+        .login-container {
+            background-color: var(--light);
+            padding: 30px 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .login-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .login-tab {
+            flex: 1;
+            padding: 12px 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .login-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        /* Notification Message */
+        .notification {
+            position: fixed;
+            top: calc(80px + env(safe-area-inset-top, 0px));
+            right: 15px;
+            left: 15px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background-color: var(--success);
+            color: white;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            display: none;
+            animation: slideDown 0.3s ease;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.error {
+            background-color: var(--danger);
+        }
+        
+        .notification.warning {
+            background-color: var(--warning);
+        }
+        
+        .notification.info {
+            background-color: var(--info);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 40px 0 30px;
+            padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-size: 14px;
+            display: inline-block;
+            padding: 3px 0;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .contact-info {
+            list-style: none;
+        }
+        
+        .contact-info li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+        
+        .contact-info i {
+            color: var(--primary);
+            margin-right: 10px;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #bbb;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        /* Logo Placeholder */
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30,20 L70,20 L80,40 L70,60 L30,60 L20,40 Z" fill="%23ffffff" stroke="%23b08a5e" stroke-width="2"/><path d="M40,30 L60,30 L55,50 L45,50 Z" fill="%23b08a5e"/><circle cx="50" cy="70" r="5" fill="%23ffffff"/></svg>');
+            background-size: cover;
+            flex-shrink: 0;
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--accent);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .week-days, .week-slots {
+                grid-template-columns: repeat(7, 1fr);
+            }
+            
+            .day-slots {
+                min-width: auto;
+            }
+            
+            .nav-menu {
+                gap: 15px;
+            }
+            
+            .nav-menu a, .nav-menu button {
+                font-size: 14px;
+            }
+            
+            .book-btn {
+                padding: 8px 20px;
+                font-size: 14px;
+            }
+            
+            .owner-container {
+                grid-template-columns: 1fr 2fr;
+            }
+            
+            .notification {
+                left: auto;
+                right: 20px;
+                max-width: 350px;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .week-days, .week-slots {
+                grid-template-columns: repeat(7, 1fr);
+            }
+            
+            .day-slots {
+                min-height: 250px;
+            }
+            
+            .mobile-bottom-nav {
+                display: none;
+            }
+            
+            .nav-menu {
+                gap: 20px;
+            }
+            
+            .nav-menu a, .nav-menu button {
+                font-size: 15px;
+            }
+            
+            .book-btn {
+                padding: 10px 25px;
+                font-size: 15px;
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .week-days, .week-slots {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .day-slots {
+                min-height: 220px;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: calc(70px + env(safe-area-inset-top, 0px));
+                left: -100%;
+                flex-direction: column;
+                background-color: var(--light);
+                width: 100%;
+                text-align: left;
+                transition: 0.3s;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                padding: 20px;
+                height: calc(100vh - 70px - env(safe-area-inset-top, 0px));
+                overflow-y: auto;
+                z-index: 1000;
+                gap: 0;
+            }
+            
+            .nav-menu.active {
+                left: 0;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                width: 100%;
+            }
+            
+            .nav-menu a, .nav-menu button {
+                padding: 15px;
+                width: 100%;
+                text-align: left;
+                font-size: 16px;
+                border-bottom: 1px solid var(--accent);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-radius: 8px;
+                margin-bottom: 5px;
+            }
+            
+            .nav-menu li:last-child a,
+            .nav-menu li:last-child button {
+                border-bottom: none;
+            }
+            
+            .book-btn {
+                justify-content: center;
+                margin-top: 10px;
+                background: var(--primary);
+                color: white;
+                border-radius: 10px;
+                padding: 15px;
+            }
+            
+            .hero h1 {
+                font-size: 28px;
+            }
+            
+            .hero-btns {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-primary, .btn-secondary {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .week-days, .week-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            
+            .booking-dashboard {
+                padding-bottom: calc(60px + 70px + env(safe-area-inset-bottom, 0px));
+            }
+            
+            footer {
+                padding-bottom: calc(30px + 70px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero {
+                padding: calc(70px + var(--safe-top)) 15px 60px;
+            }
+            
+            .week-days, .week-slots {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-tabs, .booking-filters {
+                flex-direction: column;
+            }
+            
+            .tab-btn, .filter-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .logo-text {
+                font-size: 20px;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                border-radius: 10px;
+            }
+            
+            .available-slots-container,
+            .owner-bookings-container {
+                padding: 20px;
+            }
+            
+            .nav-menu a, .nav-menu button {
+                padding: 12px;
+                font-size: 15px;
+            }
+        }
+        
+        /* Touch Device Optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .btn-primary:hover,
+            .btn-secondary:hover,
+            .book-btn:hover,
+            .action-btn:hover,
+            .filter-btn:hover,
+            .tab-btn:hover {
+                transform: none;
+            }
+            
+            .service-card:hover {
+                transform: none;
+            }
+            
+            .nav-menu a:hover,
+            .nav-menu button:hover {
+                color: inherit;
+            }
+            
+            .btn-primary:active,
+            .btn-secondary:active,
+            .book-btn:active {
+                transform: scale(0.98);
+            }
+            
+            .time-slot-item {
+                min-height: 44px;
+                padding: 12px 5px;
+            }
+            
+            .form-control {
+                font-size: 16px; /* Prevents iOS zoom */
+            }
+            
+            select.form-control {
+                padding-right: 30px;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 16px;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+            }
+        }
+        
+        /* Print Styles */
+        @media print {
+            header, footer, .mobile-bottom-nav, .book-btn, .action-buttons, .hero-btns, .modal-close {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .section-title {
+                padding-top: 0;
+            }
+            
+            .service-card, .owner-container, .available-slots-container, .owner-bookings-container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div style="flex: 1;">
+            <strong>Install Glamour Salon App</strong>
+            <p style="font-size: 12px; margin-top: 5px; opacity: 0.9;">For better experience</p>
+        </div>
+        <button onclick="installApp()">Install</button>
+        <button onclick="dismissInstallPrompt()" class="secondary">Later</button>
+    </div>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="#home" class="nav-bottom-link active" onclick="setActiveNav(this)">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="#dashboard" class="nav-bottom-link" onclick="setActiveNav(this)">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Book</span>
+        </a>
+        <a href="#services" class="nav-bottom-link" onclick="setActiveNav(this)">
+            <i class="fas fa-cut"></i>
+            <span>Services</span>
+        </a>
+        <a href="#owner" class="nav-bottom-link" onclick="setActiveNav(this)">
+            <i class="fas fa-user"></i>
+            <span>Owner</span>
+        </a>
+        <a href="#" class="nav-bottom-link" onclick="handleBookNow()">
+            <i class="fas fa-plus-circle"></i>
+            <span>Book Now</span>
+        </a>
+    </nav>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationMessage"></span>
+    </div>
+    
+    <!-- Header & Navigation -->
+    <header>
+        <div class="container">
+            <div class="nav-container">
+                <div class="logo-container">
+                    <!-- Barber Hair Cutting Logo -->
+                    <div class="logo-placeholder"></div>
+                    <a href="#home" class="logo-text">Glamour Salon & Spa</a>
+                </div>
+                
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <ul class="nav-menu">
+                    <li><a href="#home" onclick="closeMobileMenu()"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#dashboard" onclick="closeMobileMenu()"><i class="fas fa-calendar-alt"></i> Booking Dashboard</a></li>
+                    <li><a href="#services" onclick="closeMobileMenu()"><i class="fas fa-cut"></i> Services</a></li>
+                    <li><a href="#owner" onclick="closeMobileMenu()"><i class="fas fa-user"></i> Owner</a></li>
+                    <!-- SHARE BUTTON ADDED HERE -->
+                    <li>
+                        <button class="share-btn" onclick="shareApp()">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </li>
+                    <!-- Login/Logout buttons - Always visible -->
+                    <li id="loginNavItem">
+                        <button class="login-btn" onclick="showLogin()">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </li>
+                    <li id="logoutNavItem" style="display: none;">
+                        <button class="logout-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </li>
+                    <li><button class="book-btn" onclick="handleBookNow()"><i class="fas fa-calendar-plus"></i> Book Now</button></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Real-time Booking Dashboard</h1>
+                <p>See available slots, book instantly, and manage appointments - all in one place for customers and owner.</p>
+                <div class="hero-btns">
+                    <a href="#dashboard" class="btn-primary">
+                        <i class="fas fa-calendar-alt"></i> View Booking Dashboard
+                    </a>
+                    <button class="btn-secondary" onclick="handleBookNow()">
+                        <i class="fas fa-bolt"></i> Quick Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Our Services</h2>
+                <p>Experience premium beauty and wellness treatments at Glamour Salon & Spa</p>
+            </div>
+            
+            <div class="services-grid">
+                <!-- Services will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Owner Section -->
+    <section class="owner-section" id="owner">
+        <div class="container">
+            <div class="section-title">
+                <h2>Meet Our Owner</h2>
+                <p>Professional beauty and wellness expert with years of experience</p>
+            </div>
+            
+            <div class="owner-container">
+                <div>
+                    <!-- Owner Photo Placeholder - Replace src with your image -->
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Vivek Baburav Sapkal" class="owner-img">
+                </div>
+                <div class="owner-info">
+                    <h3>Vivek Baburav Sapkal</h3>
+                    <p class="title">Owner & Head Stylist</p>
+                    <p>With over 15 years of experience in the beauty and wellness industry, Vivek brings expertise and passion to every service. He personally oversees all operations and ensures that every client receives the highest quality service.</p>
+                    
+                    <div class="contact-details">
+                        <div>
+                            <i class="fas fa-phone"></i>
+                            <span>+91 98765 43210</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-envelope"></i>
+                            <span>vivek.glamoursalon@gmail.com</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Near Palus ST Stand, Tal-Palus, Sangli - 416308</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock"></i>
+                            <span>Mon-Sun: 9:00 AM - 9:00 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Dashboard -->
+    <section class="booking-dashboard" id="dashboard">
+        <div class="container">
+            <div class="section-title">
+                <h2>Booking Dashboard</h2>
+                <p>Customers: See available slots | Owner: Manage all bookings</p>
+            </div>
+            
+            <!-- Login/User Type Selection -->
+            <div class="login-container" id="loginSection">
+                <div class="login-tabs">
+                    <button class="login-tab active" onclick="switchLoginTab('customer')">Customer View</button>
+                    <button class="login-tab" onclick="switchLoginTab('owner')">Owner Login</button>
+                </div>
+                
+                <!-- Customer View -->
+                <div class="tab-content active" id="customerLoginTab">
+                    <h3 style="text-align: center; color: var(--secondary); margin-bottom: 20px;">Customer View</h3>
+                    <p style="text-align: center; margin-bottom: 30px; color: #666;">View available slots and book appointments instantly.</p>
+                    <button class="btn-primary" style="width: 100%;" onclick="loginAsCustomer()">
+                        <i class="fas fa-user"></i> Continue as Customer
+                    </button>
+                    <p style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
+                        No login required for viewing slots and booking
+                    </p>
+                </div>
+                
+                <!-- Owner Login -->
+                <div class="tab-content" id="ownerLoginTab">
+                    <h3 style="text-align: center; color: var(--secondary); margin-bottom: 20px;">Owner Login</h3>
+                    <div style="margin-bottom: 20px; padding: 15px; background-color: var(--accent); border-radius: 5px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;"><i class="fas fa-info-circle"></i> Owner Credentials</h4>
+                        <p style="font-size: 14px; color: #666;">Email: vivek.glamoursalon@gmail.com<br>Password: owner123</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerEmail"><i class="fas fa-envelope"></i> Owner Email</label>
+                        <input type="email" id="ownerEmail" class="form-control" placeholder="vivek.glamoursalon@gmail.com" value="vivek.glamoursalon@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerPassword"><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" id="ownerPassword" class="form-control" placeholder="Enter password" value="owner123">
+                    </div>
+                    <button class="btn-primary" style="width: 100%;" onclick="loginAsOwner()">
+                        <i class="fas fa-sign-in-alt"></i> Login as Owner
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Customer View: Available Slots -->
+            <div class="tab-content" id="customerViewTab" style="display: none;">
+                <div class="available-slots-container">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 25px;">
+                        <h3 style="color: var(--secondary); margin: 0;"><i class="far fa-calendar-check"></i> Available Slots This Week</h3>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-weight: 500; font-size: 14px;">Logged in as: <span id="customerNameDisplay">Guest Customer</span></span>
+                            <button class="btn-primary" onclick="openBookingModal()">
+                                <i class="fas fa-plus-circle"></i> Book New
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="calendar-navigation">
+                        <button class="nav-btn" onclick="changeWeek(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <div class="current-week" id="currentWeekDisplay">Loading...</div>
+                        <button class="nav-btn" onclick="changeWeek(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="week-days" id="weekDaysHeader">
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="week-slots" id="weekSlotsGrid">
+                        <!-- Time slots for each day will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="slot-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #e8f5e9; border: 1px solid #c8e6c9;"></div>
+                            <span>Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f5f5f5; border: 1px solid #eee;"></div>
+                            <span>Booked</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #fff3e0; border: 1px solid #ffe0b2;"></div>
+                            <span>Peak Hour (6-8 PM)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: var(--primary);"></div>
+                            <span>Selected</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Selected Slot Details -->
+                    <div id="selectedSlotDetails" style="background-color: var(--accent); padding: 20px; border-radius: 10px; margin-top: 25px; display: none;">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-check-circle"></i> Selected Slot
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+                            <div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-size: 13px; color: #666;">Selected Date</div>
+                                        <div style="font-weight: 600; font-size: 15px;" id="selectedDate">--</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 13px; color: #666;">Selected Time</div>
+                                        <div style="font-weight: 600; font-size: 15px;" id="selectedTime">--</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 13px; color: #666;">Duration</div>
+                                        <div style="font-weight: 600; font-size: 15px;">60 minutes</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 13px; color: #666;">Therapist</div>
+                                        <div style="font-weight: 600; font-size: 15px;" id="selectedTherapist">Any Available</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 15px;">
+                                    <div style="font-size: 13px; color: #666; margin-bottom: 10px;">Available Services</div>
+                                    <div id="slotServicesList" style="display: grid; gap: 8px;">
+                                        <!-- Services will be listed here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="btn-primary" onclick="bookSelectedSlot()" style="width: 100%;">
+                                    <i class="fas fa-bookmark"></i> Book This Slot
+                                </button>
+                                <button class="btn-secondary" onclick="clearSlotSelection()" style="width: 100%;">
+                                    <i class="fas fa-times"></i> Clear Selection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customer's Bookings -->
+                <div style="background-color: var(--light); padding: 25px; border-radius: 15px; margin-top: 25px; box-shadow: var(--shadow);">
+                    <h3 style="color: var(--secondary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-history"></i> My Bookings
+                    </h3>
+                    <div class="booking-filters">
+                        <button class="filter-btn active" onclick="filterCustomerBookings('upcoming')">Upcoming</button>
+                        <button class="filter-btn" onclick="filterCustomerBookings('past')">Past</button>
+                        <button class="filter-btn" onclick="filterCustomerBookings('cancelled')">Cancelled</button>
+                        <button class="filter-btn" onclick="filterCustomerBookings('all')">All</button>
+                    </div>
+                    
+                    <div id="customerBookingsList">
+                        <!-- Customer's bookings will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Owner View: Booking Management -->
+            <div class="tab-content" id="ownerViewTab" style="display: none;">
+                <div class="owner-bookings-container">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 15px; margin-bottom: 25px;">
+                        <div>
+                            <h3 style="color: var(--secondary); margin-bottom: 5px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-tachometer-alt"></i> Owner Dashboard
+                            </h3>
+                            <p style="color: #666; margin-top: 5px; font-size: 14px;">Logged in as: <strong>Vivek Baburav Sapkal</strong></p>
+                            <p style="color: #666; font-size: 13px;">Email: vivek.glamoursalon@gmail.com</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                            <span style="font-weight: 500; font-size: 14px;">Today: <span id="todayDate">--</span></span>
+                            <button class="btn-primary" onclick="refreshBookings()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistics -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        <div style="background-color: var(--accent); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="totalBookingsCount">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Total Bookings</div>
+                        </div>
+                        <div style="background-color: var(--accent); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--success);" id="todayBookingsCount">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Today's Bookings</div>
+                        </div>
+                        <div style="background-color: var(--accent); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--info);" id="upcomingBookingsCount">0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Upcoming</div>
+                        </div>
+                        <div style="background-color: var(--accent); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700; color: var(--warning);" id="revenueCount">₹0</div>
+                            <div style="font-size: 12px; color: #666; margin-top: 5px;">Today's Revenue</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Booking Filters -->
+                    <div class="booking-filters">
+                        <button class="filter-btn active" onclick="filterOwnerBookings('today')">Today</button>
+                        <button class="filter-btn" onclick="filterOwnerBookings('upcoming')">Upcoming</button>
+                        <button class="filter-btn" onclick="filterOwnerBookings('past')">Past</button>
+                        <button class="filter-btn" onclick="filterOwnerBookings('cancelled')">Cancelled</button>
+                        <button class="filter-btn" onclick="filterOwnerBookings('all')">All Bookings</button>
+                    </div>
+                    
+                    <!-- Bookings Table -->
+                    <div class="bookings-table-wrapper">
+                        <table class="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Date & Time</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ownerBookingsList">
+                                <!-- Bookings will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- No Bookings Message -->
+                    <div id="noBookingsMessage" style="text-align: center; padding: 40px; display: none;">
+                        <i class="far fa-calendar-times fa-3x" style="color: #ddd; margin-bottom: 15px;"></i>
+                        <h4 style="color: #666;">No bookings found</h4>
+                        <p style="color: #666; margin-top: 5px;">There are no bookings matching the selected filter.</p>
+                    </div>
+                    
+                    <!-- Owner Actions -->
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--accent);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-cog"></i> Owner Actions
+                        </h4>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-primary" onclick="openBookingModal()">
+                                <i class="fas fa-plus-circle"></i> Add Manual Booking
+                            </button>
+                            <button class="btn-secondary" onclick="downloadBookingsReport()">
+                                <i class="fas fa-download"></i> Download Report
+                            </button>
+                            <button class="btn-secondary" onclick="sendReminders()">
+                                <i class="fas fa-bell"></i> Send Reminders
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Modal -->
+    <div class="booking-modal" id="bookingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--secondary); margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment
+                </h3>
+                <button class="modal-close" onclick="closeBookingModal()" aria-label="Close">&times;</button>
+            </div>
+            
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="bookingService"><i class="fas fa-cut"></i> Select Service</label>
+                    <select id="bookingService" class="form-control" required>
+                        <option value="">Choose a service</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookingDate"><i class="far fa-calendar"></i> Date</label>
+                        <input type="date" id="bookingDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookingTime"><i class="far fa-clock"></i> Time</label>
+                        <select id="bookingTime" class="form-control" required>
+                            <option value="">Select time</option>
+                            <!-- Time slots will be populated -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingTherapist"><i class="fas fa-user-md"></i> Preferred Therapist (Optional)</label>
+                    <select id="bookingTherapist" class="form-control">
+                        <option value="">Any Available</option>
+                        <option value="priya">Priya (Hair Specialist)</option>
+                        <option value="meera">Meera (Skin Expert)</option>
+                        <option value="anjali">Anjali (Spa Therapist)</option>
+                        <option value="neha">Neha (Makeup Artist)</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customerNameInput"><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="customerNameInput" class="form-control" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone"><i class="fas fa-phone"></i> Phone Number</label>
+                        <input type="tel" id="customerPhone" class="form-control" placeholder="10-digit mobile number" required inputmode="tel">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerEmail"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="customerEmail" class="form-control" placeholder="your@email.com" required inputmode="email">
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-bell"></i> Notifications</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notifyWhatsApp" checked>
+                            <span>WhatsApp</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notifySMS" checked>
+                            <span>SMS</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notifyEmail" checked>
+                            <span>Email</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="notifyReminder" checked>
+                            <span>Reminder</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specialNotes"><i class="fas fa-sticky-note"></i> Special Notes (Optional)</label>
+                    <textarea id="specialNotes" class="form-control" rows="3" placeholder="Any allergies, special requirements, etc."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeBookingModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Confirm Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Glamour Salon & Spa</h3>
+                    <p style="color: #bbb; margin-bottom: 10px; line-height: 1.5;"><strong>Owner:</strong> Vivek Baburav Sapkal</p>
+                    <p style="color: #bbb; margin-bottom: 20px; line-height: 1.5;">Your Glamour Our Passion</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#dashboard">Booking Dashboard</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#owner">Contact Owner</a></li>
+                        <li><a href="#" onclick="handleBookNow()">Book Appointment</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Contact Info</h3>
+                    <ul class="contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                Near Palus ST Stand, Tal-Palus,<br>
+                                Sangli - 416308, Maharashtra
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <div>+91 98765 43210</div>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <div>vivek.glamoursalon@gmail.com</div>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <div>Mon-Sun: 9:00 AM - 9:00 PM</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2024 Glamour Salon & Spa. All Rights Reserved. | Booking Dashboard System</p>
+                <p style="margin-top: 10px;">Your Glamour Our Passion</p>
+                <p style="margin-top: 10px; font-size: 12px; opacity: 0.7;">PWA Version 1.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentWeek = 0; // 0 = current week
+        let selectedSlot = null;
+        let currentUserType = null; // 'customer' or 'owner' or null
+        let allBookings = JSON.parse(localStorage.getItem('glamourBookings')) || [];
+        let currentUser = null;
+        let deferredPrompt = null;
+        let isStandalone = false;
+        
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Check if app is installed
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone === true) {
+            isStandalone = true;
+            document.body.classList.add('standalone');
+        }
+        
+        // Install Prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install prompt after 5 seconds
+            setTimeout(() => {
+                if (!isStandalone && deferredPrompt) {
+                    document.getElementById('installPrompt').style.display = 'flex';
+                }
+            }, 5000);
+        });
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                        isStandalone = true;
+                        document.body.classList.add('standalone');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').style.display = 'none';
+                });
+            }
+        }
+        
+        function dismissInstallPrompt() {
+            document.getElementById('installPrompt').style.display = 'none';
+            // Don't show again for 7 days
+            localStorage.setItem('installPromptDismissed', Date.now());
+        }
+        
+        // SHARE FUNCTION - ADDED THIS NEW FUNCTION
+        function shareApp() {
+            const shareData = {
+                title: 'Glamour Salon & Spa',
+                text: 'Book salon appointments instantly with Glamour Salon & Spa. View available slots and manage bookings online.',
+                url: window.location.href
+            };
+            
+            if (navigator.share) {
+                // Use Web Share API if available
+                navigator.share(shareData)
+                    .then(() => console.log('Successful share'))
+                    .catch((error) => {
+                        console.log('Error sharing:', error);
+                        fallbackShare();
+                    });
+            } else {
+                // Fallback for browsers without Web Share API
+                fallbackShare();
+            }
+        }
+        
+        function fallbackShare() {
+            // Create a temporary input element to copy the URL
+            const tempInput = document.createElement('input');
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                // Try to copy to clipboard
+                document.execCommand('copy');
+                showNotification('Link copied to clipboard! Share it with others.', 'info');
+            } catch (err) {
+                // If copy fails, show the URL for manual copying
+                showNotification(`Share this link: ${window.location.href}`, 'info');
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if install prompt was recently dismissed
+            const lastDismissed = localStorage.getItem('installPromptDismissed');
+            if (lastDismissed && (Date.now() - parseInt(lastDismissed)) < 7 * 24 * 60 * 60 * 1000) {
+                deferredPrompt = null;
+            }
+            
+            // Set today's date in date picker
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            document.getElementById('bookingDate').value = todayStr;
+            document.getElementById('bookingDate').min = todayStr;
+            
+            // Set today's date in owner dashboard
+            document.getElementById('todayDate').textContent = formatDate(today);
+            
+            // Generate time slots for booking modal
+            generateTimeSlots();
+            
+            // Load initial week slots for customer view
+            loadWeekSlots();
+            
+            // Load services
+            loadServices();
+            
+            // Load sample data if empty
+            if (allBookings.length === 0) {
+                loadSampleBookings();
+            }
+            
+            // Set up event listeners
+            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                processBooking();
+            });
+            
+            document.getElementById('bookingDate').addEventListener('change', function() {
+                generateTimeSlots();
+            });
+            
+            // Mobile menu toggle
+            document.querySelector('.mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+            
+            // Close modal on outside click
+            document.getElementById('bookingModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeBookingModal();
+                }
+            });
+            
+            // Smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    if(this.getAttribute('href') !== '#') {
+                        e.preventDefault();
+                        const targetId = this.getAttribute('href');
+                        if(targetId !== '#') {
+                            const targetElement = document.querySelector(targetId);
+                            if (targetElement) {
+                                targetElement.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                                closeMobileMenu();
+                                
+                                // Update mobile bottom nav
+                                if (targetId !== '#') {
+                                    setActiveNavByHref(targetId);
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Sticky header
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('header');
+                if (window.scrollY > 100) {
+                    header.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                    header.style.padding = 'calc(5px + var(--safe-top)) 0 5px';
+                } else {
+                    header.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
+                    header.style.padding = 'calc(15px + var(--safe-top)) 0 15px';
+                }
+            });
+            
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                const user = JSON.parse(savedUser);
+                if (user.type === 'customer') {
+                    loginAsCustomer();
+                } else if (user.type === 'owner') {
+                    // Auto login for owner
+                    currentUserType = 'owner';
+                    currentUser = user;
+                    updateNavButtons();
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('customerViewTab').style.display = 'none';
+                    document.getElementById('ownerViewTab').style.display = 'block';
+                    loadOwnerDashboard();
+                }
+            }
+            
+            // Handle back button
+            window.addEventListener('popstate', function() {
+                closeMobileMenu();
+                closeBookingModal();
+            });
+            
+            // Handle orientation change
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 100);
+            });
+            
+            // Prevent pull-to-refresh on mobile
+            document.body.addEventListener('touchmove', function(e) {
+                if (window.scrollY === 0) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Initialize mobile bottom nav
+            initMobileBottomNav();
+            
+            // Ensure login/logout buttons are visible
+            updateNavButtons();
+            
+            // Initialize EmailJS with your Public Key
+            // CHANGE: Updated with your actual EmailJS Public Key
+            emailjs.init("yZFFRocqVlWop5Gfi");
+        });
+        
+        function initMobileBottomNav() {
+            const navLinks = document.querySelectorAll('.nav-bottom-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                        return;
+                    }
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+        
+        function setActiveNav(element) {
+            document.querySelectorAll('.nav-bottom-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+        
+        function setActiveNavByHref(href) {
+            document.querySelectorAll('.nav-bottom-link').forEach(link => {
+                if (link.getAttribute('href') === href) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+        
+        function toggleMobileMenu() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+            document.body.style.overflow = document.querySelector('.nav-menu').classList.contains('active') ? 'hidden' : '';
+        }
+        
+        function closeMobileMenu() {
+            document.querySelector('.nav-menu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Navigation button functions
+        function showLogin() {
+            document.getElementById('dashboard').scrollIntoView({behavior: 'smooth'});
+            closeMobileMenu();
+        }
+        
+        function handleBookNow() {
+            // When clicking Book Now, first show customer view with available slots
+            if (!currentUserType) {
+                // If not logged in, show login and then customer view
+                loginAsCustomer();
+            } else if (currentUserType === 'customer') {
+                // If already customer, just scroll to slots
+                document.getElementById('dashboard').scrollIntoView({behavior: 'smooth'});
+            } else if (currentUserType === 'owner') {
+                // If owner, switch to customer view first
+                loginAsCustomer();
+            }
+            closeMobileMenu();
+        }
+        
+        function updateNavButtons() {
+            if (currentUserType) {
+                // User is logged in, show logout button
+                document.getElementById('loginNavItem').style.display = 'none';
+                document.getElementById('logoutNavItem').style.display = 'block';
+            } else {
+                // User is not logged in, show login button
+                document.getElementById('loginNavItem').style.display = 'block';
+                document.getElementById('logoutNavItem').style.display = 'none';
+            }
+        }
+        
+        // Login functions
+        function switchLoginTab(tab) {
+            // Update active tab
+            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'customer') {
+                document.querySelector('[onclick="switchLoginTab(\'customer\')"]').classList.add('active');
+                document.getElementById('customerLoginTab').classList.add('active');
+            } else {
+                document.querySelector('[onclick="switchLoginTab(\'owner\')"]').classList.add('active');
+                document.getElementById('ownerLoginTab').classList.add('active');
+            }
+        }
+        
+        function loginAsCustomer() {
+            currentUserType = 'customer';
+            currentUser = {
+                type: 'customer',
+                name: 'Guest Customer',
+                email: 'guest@example.com',
+                phone: ''
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Update navigation buttons
+            updateNavButtons();
+            
+            // Hide login, show customer view
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('customerViewTab').style.display = 'block';
+            document.getElementById('ownerViewTab').style.display = 'none';
+            
+            // Update customer name display
+            document.getElementById('customerNameDisplay').textContent = currentUser.name;
+            
+            // Load customer bookings
+            loadCustomerBookings();
+            
+            // Scroll to dashboard
+            document.getElementById('dashboard').scrollIntoView({behavior: 'smooth'});
+            
+            showNotification('Logged in as Customer');
+            
+            // Update mobile bottom nav
+            setActiveNavByHref('#dashboard');
+        }
+        
+        function loginAsOwner() {
+            const email = document.getElementById('ownerEmail').value;
+            const password = document.getElementById('ownerPassword').value;
+            
+            if (email === 'vivek.glamoursalon@gmail.com' && password === 'owner123') {
+                currentUserType = 'owner';
+                currentUser = {
+                    type: 'owner',
+                    name: 'Vivek Baburav Sapkal',
+                    email: email,
+                    phone: '+91 98765 43210'
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                // Update navigation buttons
+                updateNavButtons();
+                
+                // Hide login, show owner view
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('customerViewTab').style.display = 'none';
+                document.getElementById('ownerViewTab').style.display = 'block';
+                
+                // Load owner dashboard
+                loadOwnerDashboard();
+                
+                // Scroll to dashboard
+                document.getElementById('dashboard').scrollIntoView({behavior: 'smooth'});
+                
+                showNotification('Logged in as Owner');
+            } else {
+                showNotification('Invalid owner credentials. Please use:<br>Email: vivek.glamoursalon@gmail.com<br>Password: owner123', 'error');
+            }
+        }
+        
+        function logout() {
+            currentUserType = null;
+            currentUser = null;
+            
+            // Clear localStorage
+            localStorage.removeItem('currentUser');
+            
+            // Update navigation buttons
+            updateNavButtons();
+            
+            // Show login, hide other views
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('customerViewTab').style.display = 'none';
+            document.getElementById('ownerViewTab').style.display = 'none';
+            
+            // Reset to customer tab
+            switchLoginTab('customer');
+            
+            showNotification('Logged out successfully');
+            
+            // Update mobile bottom nav
+            setActiveNavByHref('#dashboard');
+        }
+        
+        // Load services
+        function loadServices() {
+            const services = [
+                {
+                    id: 'haircut',
+                    name: 'Haircut & Styling',
+                    price: '₹499',
+                    duration: '60 mins',
+                    description: 'Professional haircut and styling by our expert hairstylists. Includes consultation, cut, wash, and blow-dry.',
+                    image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                },
+                {
+                    id: 'coloring',
+                    name: 'Hair Coloring',
+                    price: '₹999',
+                    duration: '90 mins',
+                    description: 'Premium hair coloring services with ammonia-free colors. Full consultation and aftercare included.',
+                    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                },
+                {
+                    id: 'facial',
+                    name: 'Gold Facial',
+                    price: '₹1299',
+                    duration: '90 mins',
+                    description: 'Luxurious gold facial with 24K gold particles. Rejuvenates skin, reduces wrinkles, and adds glow.',
+                    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                },
+                {
+                    id: 'spa',
+                    name: 'Aromatherapy Spa',
+                    price: '₹1499',
+                    duration: '120 mins',
+                    description: 'Full body aromatherapy massage with essential oils. Relieves stress and muscle tension.',
+                    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                },
+                {
+                    id: 'waxing',
+                    name: 'Full Arms Waxing',
+                    price: '₹399',
+                    duration: '45 mins',
+                    description: 'Complete arms waxing with premium wax. Includes pre and post treatment care.',
+                    image: 'https://images.unsplash.com/photo-1596703923538-b6d4bb0a44ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                },
+                {
+                    id: 'manicure',
+                    name: 'Manicure & Pedicure',
+                    price: '₹899',
+                    duration: '75 mins',
+                    description: 'Complete hand and foot care including shaping, cuticle care, massage, and polish.',
+                    image: 'https://images.unsplash.com/photo-1607779097330-9b6b136e2a7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
+                }
+            ];
+            
+            // Populate services grid
+            const servicesGrid = document.querySelector('.services-grid');
+            servicesGrid.innerHTML = '';
+            
+            services.forEach(service => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card';
+                serviceCard.innerHTML = `
+                    <img src="${service.image}" alt="${service.name}" class="service-img" loading="lazy">
+                    <div class="service-content">
+                        <h3>${service.name}</h3>
+                        <p>${service.description}</p>
+                        <div class="service-price">${service.price} (${service.duration})</div>
+                    </div>
+                `;
+                servicesGrid.appendChild(serviceCard);
+            });
+            
+            // Populate booking form services
+            const bookingServiceSelect = document.getElementById('bookingService');
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = `${service.name} - ${service.price} (${service.duration})`;
+                bookingServiceSelect.appendChild(option);
+            });
+        }
+        
+        // Week navigation for customer view
+        function loadWeekSlots() {
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() + (currentWeek * 7));
+            
+            // Get Monday of the week
+            const day = startDate.getDay();
+            const diff = startDate.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(startDate.setDate(diff));
+            
+            // Update week display
+            const sunday = new Date(monday);
+            sunday.setDate(sunday.getDate() + 6);
+            document.getElementById('currentWeekDisplay').textContent = 
+                `Week of ${formatDate(monday)} to ${formatDate(sunday)}`;
+            
+            // Generate days headers
+            const weekDaysHeader = document.getElementById('weekDaysHeader');
+            weekDaysHeader.innerHTML = '';
+            
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            days.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'day-header';
+                dayEl.textContent = day;
+                weekDaysHeader.appendChild(dayEl);
+            });
+            
+            // Generate slots for each day
+            const weekSlotsGrid = document.getElementById('weekSlotsGrid');
+            weekSlotsGrid.innerHTML = '';
+            
+            for (let i = 0; i < 7; i++) {
+                const currentDay = new Date(monday);
+                currentDay.setDate(currentDay.getDate() + i);
+                
+                const daySlots = document.createElement('div');
+                daySlots.className = 'day-slots';
+                
+                // Date header
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'day-date';
+                dateHeader.textContent = formatDate(currentDay, 'short');
+                daySlots.appendChild(dateHeader);
+                
+                // Time slots
+                const timeSlotsList = document.createElement('div');
+                timeSlotsList.className = 'time-slots-list';
+                
+                // Generate time slots for this day
+                const timeSlots = generateDaySlots(currentDay);
+                timeSlots.forEach(slot => {
+                    const slotEl = document.createElement('div');
+                    slotEl.className = `time-slot-item ${slot.status}`;
+                    slotEl.textContent = slot.time;
+                    slotEl.dataset.date = slot.date;
+                    slotEl.dataset.time = slot.fullTime;
+                    slotEl.dataset.displayTime = slot.time;
+                    
+                    if (slot.status === 'available' || slot.status === 'peak') {
+                        slotEl.addEventListener('click', function() {
+                            selectTimeSlot(this, slot);
+                        });
+                    }
+                    
+                    timeSlotsList.appendChild(slotEl);
+                });
+                
+                daySlots.appendChild(timeSlotsList);
+                weekSlotsGrid.appendChild(daySlots);
+            }
+        }
+        
+        function generateDaySlots(date) {
+            const dateStr = date.toISOString().split('T')[0];
+            const timeSlots = [];
+            
+            // Business hours: 9 AM to 9 PM
+            for (let hour = 9; hour < 21; hour++) {
+                const timeString = `${hour.toString().padStart(2, '0')}:00`;
+                const displayTime = formatTime12Hour(timeString);
+                const isPeak = hour >= 18 && hour < 20;
+                
+                // Check if slot is booked
+                const isBooked = allBookings.some(booking => 
+                    booking.date === dateStr && 
+                    booking.time === timeString && 
+                    booking.status !== 'cancelled'
+                );
+                
+                timeSlots.push({
+                    date: dateStr,
+                    fullTime: timeString,
+                    time: displayTime,
+                    status: isBooked ? 'booked' : (isPeak ? 'peak' : 'available'),
+                    isPeak: isPeak,
+                    isBooked: isBooked
+                });
+            }
+            
+            return timeSlots;
+        }
+        
+        function changeWeek(direction) {
+            currentWeek += direction;
+            loadWeekSlots();
+        }
+        
+        function selectTimeSlot(element, slotData) {
+            // Remove selected from all slots
+            document.querySelectorAll('.time-slot-item.selected').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            
+            // Add selected to clicked slot
+            element.classList.add('selected');
+            selectedSlot = slotData;
+            
+            // Update selected slot details
+            updateSelectedSlotDetails();
+            
+            // Show details section
+            document.getElementById('selectedSlotDetails').style.display = 'block';
+            
+            // Scroll to details
+            document.getElementById('selectedSlotDetails').scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+        }
+        
+        function updateSelectedSlotDetails() {
+            if (!selectedSlot) return;
+            
+            const dateObj = new Date(selectedSlot.date);
+            document.getElementById('selectedDate').textContent = formatDate(dateObj);
+            document.getElementById('selectedTime').textContent = selectedSlot.time;
+            
+            // Update available services list
+            const servicesList = document.getElementById('slotServicesList');
+            servicesList.innerHTML = '';
+            
+            const services = [
+                { name: 'Haircut & Styling', price: 499, duration: 60 },
+                { name: 'Hair Coloring', price: 999, duration: 90 },
+                { name: 'Gold Facial', price: 1299, duration: 90 },
+                { name: 'Aromatherapy Spa', price: 1499, duration: 120 }
+            ];
+            
+            services.forEach(service => {
+                const serviceItem = document.createElement('div');
+                serviceItem.style.display = 'flex';
+                serviceItem.style.justifyContent = 'space-between';
+                serviceItem.style.padding = '8px 0';
+                serviceItem.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+                serviceItem.style.fontSize = '14px';
+                serviceItem.innerHTML = `
+                    <span>${service.name}</span>
+                    <span style="font-weight: 600; color: var(--primary);">₹${service.price}</span>
+                `;
+                servicesList.appendChild(serviceItem);
+            });
+        }
+        
+        function clearSlotSelection() {
+            document.querySelectorAll('.time-slot-item.selected').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            selectedSlot = null;
+            document.getElementById('selectedSlotDetails').style.display = 'none';
+        }
+        
+        function bookSelectedSlot() {
+            if (!selectedSlot) {
+                showNotification('Please select a time slot first', 'warning');
+                return;
+            }
+            
+            // Set date and time in booking modal
+            document.getElementById('bookingDate').value = selectedSlot.date;
+            generateTimeSlots();
+            
+            // Pre-select the time in modal
+            setTimeout(() => {
+                const timeSelect = document.getElementById('bookingTime');
+                for (let option of timeSelect.options) {
+                    if (option.value === selectedSlot.fullTime) {
+                        option.selected = true;
+                        break;
+                    }
+                }
+            }, 100);
+            
+            // Open booking modal
+            openBookingModal();
+        }
+        
+        // Booking modal functions
+        function openBookingModal() {
+            // If not logged in, login as customer first
+            if (!currentUserType) {
+                loginAsCustomer();
+                setTimeout(() => {
+                    document.getElementById('bookingModal').classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }, 500);
+            } else {
+                document.getElementById('bookingModal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.remove('active');
+            document.getElementById('bookingForm').reset();
+            generateTimeSlots(); // Reset time slots
+            document.body.style.overflow = '';
+        }
+        
+        function generateTimeSlots() {
+            const date = document.getElementById('bookingDate').value;
+            const timeSelect = document.getElementById('bookingTime');
+            
+            // Clear existing options
+            timeSelect.innerHTML = '<option value="">Select time</option>';
+            
+            // Generate time slots for selected date
+            const today = new Date().toISOString().split('T')[0];
+            const selectedDate = new Date(date);
+            const isToday = date === today;
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            // Get booked slots for this date
+            const bookedSlots = allBookings.filter(booking => 
+                booking.date === date && booking.status !== 'cancelled'
+            ).map(booking => booking.time);
+            
+            // Generate slots from 9 AM to 9 PM
+            for (let hour = 9; hour < 21; hour++) {
+                const timeString = `${hour.toString().padStart(2, '0')}:00`;
+                
+                // Skip past times for today
+                if (isToday && hour < currentHour) continue;
+                if (isToday && hour === currentHour && currentMinute > 0) continue;
+                
+                // Check if slot is available
+                const isBooked = bookedSlots.includes(timeString);
+                
+                const option = document.createElement('option');
+                option.value = timeString;
+                option.textContent = `${formatTime12Hour(timeString)} ${isBooked ? '(Booked)' : ''}`;
+                option.disabled = isBooked;
+                
+                timeSelect.appendChild(option);
+            }
+        }
+        
+        // UPDATED: Process Booking with EmailJS Integration
+        async function processBooking() {
+            showLoading(true);
+            
+            try {
+                const service = document.getElementById('bookingService').value;
+                const date = document.getElementById('bookingDate').value;
+                const time = document.getElementById('bookingTime').value;
+                const therapist = document.getElementById('bookingTherapist').value;
+                const name = document.getElementById('customerNameInput').value;
+                const phone = document.getElementById('customerPhone').value;
+                const email = document.getElementById('customerEmail').value;
+                
+                if (!service || !date || !time || !name || !phone || !email) {
+                    showNotification('Please fill in all required fields', 'warning');
+                    showLoading(false);
+                    return;
+                }
+                
+                // Validate phone number
+                if (!/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
+                    showNotification('Please enter a valid 10-digit phone number', 'warning');
+                    showLoading(false);
+                    return;
+                }
+                
+                // Validate email
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showNotification('Please enter a valid email address', 'warning');
+                    showLoading(false);
+                    return;
+                }
+                
+                // Generate booking ID
+                const bookingId = 'GS' + Date.now().toString().slice(-8);
+                
+                // Get service name and price
+                const serviceSelect = document.getElementById('bookingService');
+                const serviceText = serviceSelect.options[serviceSelect.selectedIndex].text;
+                const serviceMatch = serviceText.match(/₹(\d+)/);
+                const price = serviceMatch ? parseInt(serviceMatch[1]) : 0;
+                
+                // Create booking object
+                const newBooking = {
+                    id: bookingId,
+                    customerName: name,
+                    customerPhone: phone,
+                    customerEmail: email,
+                    service: service,
+                    serviceName: serviceText.split(' - ')[0],
+                    date: date,
+                    time: time,
+                    displayTime: formatTime12Hour(time),
+                    therapist: therapist || 'Any Available',
+                    price: price,
+                    status: 'confirmed',
+                    bookingDate: new Date().toISOString(),
+                    notifications: {
+                        whatsapp: document.getElementById('notifyWhatsApp').checked,
+                        sms: document.getElementById('notifySMS').checked,
+                        email: document.getElementById('notifyEmail').checked,
+                        reminder: document.getElementById('notifyReminder').checked
+                    },
+                    notes: document.getElementById('specialNotes').value
+                };
+                
+                // Save booking
+                allBookings.push(newBooking);
+                localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+                
+                // UPDATED: Send email notifications using EmailJS
+                console.log("📧 Attempting to send booking notifications...");
+                console.log("Customer:", email, "Owner: vivek.glamoursalon@gmail.com");
+                
+                const emailSent = await sendBookingNotifications(newBooking);
+                
+                // Close modal
+                closeBookingModal();
+                
+                // Show notification based on email result
+                if (emailSent) {
+                    showNotification(`✅ Booking confirmed! Booking ID: ${bookingId}. Confirmation sent to ${email} and owner`);
+                } else {
+                    showNotification(`⚠️ Booking saved locally but email failed. Booking ID: ${bookingId}`, 'warning');
+                }
+                
+                // Refresh views
+                if (currentUserType === 'customer') {
+                    loadCustomerBookings();
+                    loadWeekSlots(); // Refresh slots
+                } else if (currentUserType === 'owner') {
+                    loadOwnerDashboard();
+                }
+                
+                // Vibrate on mobile if supported
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+                
+            } catch (error) {
+                console.error("Booking process error:", error);
+                showNotification('An error occurred during booking. Please try again.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        }
+        
+        // Notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notificationMessage');
+            
+            messageElement.innerHTML = message;
+            notification.className = 'notification ' + (type || 'success');
+            notification.style.display = 'flex';
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Customer bookings
+        function loadCustomerBookings() {
+            const container = document.getElementById('customerBookingsList');
+            if (!container) return;
+            
+            // Get customer's bookings (based on phone/email)
+            const customerBookings = allBookings.filter(booking => 
+                booking.customerPhone === currentUser?.phone || 
+                booking.customerEmail === currentUser?.email
+            );
+            
+            if (customerBookings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #666;">
+                        <i class="far fa-calendar-plus fa-2x" style="margin-bottom: 15px; opacity: 0.5;"></i>
+                        <p style="margin-bottom: 15px;">You haven't made any bookings yet</p>
+                        <button class="btn-primary" style="width: 100%; max-width: 200px; margin: 0 auto;" onclick="openBookingModal()">
+                            <i class="fas fa-plus-circle"></i> Book Now
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date (newest first)
+            customerBookings.sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+            
+            let html = '';
+            customerBookings.forEach(booking => {
+                const dateObj = new Date(booking.date);
+                const isUpcoming = new Date(booking.date + ' ' + booking.time) > new Date();
+                
+                html += `
+                    <div style="background-color: ${isUpcoming ? '#e8f5e9' : '#f5f5f5'}; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <h4 style="margin: 0 0 5px 0; color: var(--secondary);">${booking.serviceName}</h4>
+                                <div style="font-size: 12px; color: #666;">ID: ${booking.id}</div>
+                            </div>
+                            <div class="booking-status status-${booking.status}">${booking.status.toUpperCase()}</div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 15px;">
+                            <div>
+                                <div style="font-size: 11px; color: #666;">Date & Time</div>
+                                <div style="font-weight: 600; font-size: 14px;">${formatDate(dateObj)} at ${booking.displayTime}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; color: #666;">Therapist</div>
+                                <div style="font-weight: 600; font-size: 14px;">${booking.therapist}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; color: #666;">Price</div>
+                                <div style="font-weight: 600; font-size: 14px; color: var(--primary);">₹${booking.price}</div>
+                            </div>
+                        </div>
+                        ${isUpcoming && booking.status === 'confirmed' ? `
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="action-btn btn-cancel" onclick="cancelCustomerBooking('${booking.id}')" style="flex: 1; min-width: 80px;">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                                <button class="action-btn btn-edit" onclick="rescheduleBooking('${booking.id}')" style="flex: 1; min-width: 80px;">
+                                    <i class="fas fa-edit"></i> Reschedule
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterCustomerBookings(filter) {
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // For now, just reload all bookings
+            loadCustomerBookings();
+        }
+        
+        function cancelCustomerBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                const booking = allBookings.find(b => b.id === bookingId);
+                if (booking) {
+                    booking.status = 'cancelled';
+                    localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+                    
+                    showNotification('Booking cancelled successfully');
+                    loadCustomerBookings();
+                    loadWeekSlots(); // Refresh available slots
+                }
+            }
+        }
+        
+        function rescheduleBooking(bookingId) {
+            const booking = allBookings.find(b => b.id === bookingId);
+            if (booking) {
+                // Set values in booking modal
+                document.getElementById('bookingDate').value = booking.date;
+                generateTimeSlots();
+                
+                setTimeout(() => {
+                    const timeSelect = document.getElementById('bookingTime');
+                    for (let option of timeSelect.options) {
+                        if (option.value === booking.time) {
+                            option.selected = true;
+                            break;
+                        }
+                    }
+                    
+                    document.getElementById('bookingService').value = booking.service;
+                    document.getElementById('customerNameInput').value = booking.customerName;
+                    document.getElementById('customerPhone').value = booking.customerPhone;
+                    document.getElementById('customerEmail').value = booking.customerEmail;
+                }, 100);
+                
+                // Open modal
+                openBookingModal();
+            }
+        }
+        
+        // Owner dashboard
+        function loadOwnerDashboard() {
+            // Update statistics
+            const today = new Date().toISOString().split('T')[0];
+            const total = allBookings.length;
+            const todayCount = allBookings.filter(b => b.date === today && b.status === 'confirmed').length;
+            const upcoming = allBookings.filter(b => 
+                new Date(b.date + ' ' + b.time) > new Date() && 
+                b.status === 'confirmed'
+            ).length;
+            
+            // Calculate today's revenue
+            const todayRevenue = allBookings
+                .filter(b => b.date === today && b.status === 'confirmed')
+                .reduce((sum, booking) => sum + (booking.price || 0), 0);
+            
+            document.getElementById('totalBookingsCount').textContent = total;
+            document.getElementById('todayBookingsCount').textContent = todayCount;
+            document.getElementById('upcomingBookingsCount').textContent = upcoming;
+            document.getElementById('revenueCount').textContent = `₹${todayRevenue}`;
+            
+            // Load bookings table
+            loadOwnerBookings('today');
+        }
+        
+        function loadOwnerBookings(filter) {
+            const container = document.getElementById('ownerBookingsList');
+            const noBookingsMsg = document.getElementById('noBookingsMessage');
+            
+            if (!container) return;
+            
+            let filteredBookings = [...allBookings];
+            
+            // Apply filter
+            const today = new Date().toISOString().split('T')[0];
+            if (filter === 'today') {
+                filteredBookings = filteredBookings.filter(b => b.date === today);
+            } else if (filter === 'upcoming') {
+                filteredBookings = filteredBookings.filter(b => 
+                    new Date(b.date + ' ' + b.time) > new Date() && 
+                    b.status === 'confirmed'
+                );
+            } else if (filter === 'past') {
+                filteredBookings = filteredBookings.filter(b => 
+                    new Date(b.date + ' ' + b.time) < new Date() && 
+                    b.status === 'confirmed'
+                );
+            } else if (filter === 'cancelled') {
+                filteredBookings = filteredBookings.filter(b => b.status === 'cancelled');
+            }
+            // 'all' shows all bookings
+            
+            // Sort by date and time
+            filteredBookings.sort((a, b) => {
+                const dateA = new Date(a.date + ' ' + a.time);
+                const dateB = new Date(b.date + ' ' + b.time);
+                return dateB - dateA;
+            });
+            
+            if (filteredBookings.length === 0) {
+                container.innerHTML = '';
+                noBookingsMsg.style.display = 'block';
+                return;
+            }
+            
+            noBookingsMsg.style.display = 'none';
+            
+            let html = '';
+            filteredBookings.forEach(booking => {
+                const dateObj = new Date(booking.date);
+                html += `
+                    <tr>
+                        <td><strong style="font-size: 12px;">${booking.id}</strong></td>
+                        <td>
+                            <div style="font-weight: 600;">${booking.customerName}</div>
+                            <div style="font-size: 11px; color: #666;">${booking.customerPhone}</div>
+                        </td>
+                        <td>
+                            <div>${booking.serviceName || 'Service'}</div>
+                            <div style="font-size: 12px; color: var(--primary);">₹${booking.price || 0}</div>
+                        </td>
+                        <td>
+                            <div>${formatDate(dateObj, 'short')}</div>
+                            <div style="font-size: 11px; color: #666;">${booking.displayTime}</div>
+                        </td>
+                        <td>
+                            <div>${booking.customerPhone}</div>
+                            <div style="font-size: 11px; color: #666;">${booking.customerEmail}</div>
+                        </td>
+                        <td><span class="booking-status status-${booking.status}">${booking.status.toUpperCase()}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                ${booking.status === 'confirmed' ? `
+                                    <button class="action-btn btn-confirm" onclick="completeBooking('${booking.id}')">Complete</button>
+                                    <button class="action-btn btn-cancel" onclick="cancelOwnerBooking('${booking.id}')">Cancel</button>
+                                ` : ''}
+                                ${booking.status === 'cancelled' ? `
+                                    <button class="action-btn btn-confirm" onclick="rebookOwnerBooking('${booking.id}')">Rebook</button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterOwnerBookings(filter) {
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Load filtered bookings
+            loadOwnerBookings(filter);
+        }
+        
+        function completeBooking(bookingId) {
+            const booking = allBookings.find(b => b.id === bookingId);
+            if (booking) {
+                booking.status = 'completed';
+                localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+                loadOwnerDashboard();
+                showNotification('Booking marked as completed');
+            }
+        }
+        
+        function cancelOwnerBooking(bookingId) {
+            if (confirm('Cancel this booking?')) {
+                const booking = allBookings.find(b => b.id === bookingId);
+                if (booking) {
+                    booking.status = 'cancelled';
+                    localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+                    loadOwnerDashboard();
+                    showNotification('Booking cancelled');
+                }
+            }
+        }
+        
+        function rebookOwnerBooking(bookingId) {
+            const booking = allBookings.find(b => b.id === bookingId);
+            if (booking) {
+                booking.status = 'confirmed';
+                localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+                loadOwnerDashboard();
+                showNotification('Booking rebooked');
+            }
+        }
+        
+        function refreshBookings() {
+            loadOwnerDashboard();
+            showNotification('Bookings refreshed');
+        }
+        
+        function downloadBookingsReport() {
+            showNotification('Downloading bookings report...', 'info');
+            // In a real app, this would generate and download a CSV/PDF
+        }
+        
+        function sendReminders() {
+            // Send reminders for today's bookings
+            const today = new Date().toISOString().split('T')[0];
+            const todayBookings = allBookings.filter(b => 
+                b.date === today && 
+                b.status === 'confirmed'
+            );
+            
+            // Simulate sending notifications
+            todayBookings.forEach(booking => {
+                sendNotification(booking, 'reminder');
+            });
+            
+            showNotification(`Reminders sent for ${todayBookings.length} bookings`, 'info');
+        }
+        
+        function sendNotification(booking, type) {
+            // Simulate sending notification
+            console.log(`${type.toUpperCase()} sent to ${booking.customerPhone} and ${booking.customerEmail}`);
+        }
+        
+        // Utility functions
+        function formatDate(date, format = 'long') {
+            if (format === 'short') {
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        function formatTime12Hour(time24) {
+            const [hour, minute] = time24.split(':');
+            const hour12 = hour % 12 || 12;
+            const ampm = hour < 12 ? 'AM' : 'PM';
+            return `${hour12}:${minute} ${ampm}`;
+        }
+        
+        // UPDATED: EmailJS Function with Correct Service ID and Template IDs
+        async function sendBookingNotifications(booking) {
+            try {
+                console.log("📧 Sending booking notifications...");
+                
+                // 1. Send email to customer
+                const customerEmailResult = await emailjs.send(
+                    "service_ucfupx8",  // Your Service ID
+                    "template_glhg10n",  // Customer Confirmation Template
+                    {
+                        to_email: booking.customerEmail,
+                        customer_name: booking.customerName,
+                        booking_id: booking.id,
+                        service: booking.serviceName,
+                        date: booking.date,
+                        time: booking.displayTime,
+                        phone: booking.customerPhone,
+                        therapist: booking.therapist || 'Any Available',
+                        salon_address: "Near Palus ST Stand, Tal-Palus, Sangli - 416308",
+                        salon_phone: "+91 98765 43210",
+                        salon_email: "vivek.glamoursalon@gmail.com",
+                        price: `₹${booking.price}`,
+                        booking_date: new Date().toLocaleDateString('en-US', { 
+                            weekday: 'long', 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                        })
+                    }
+                );
+                
+                console.log("✅ Customer email sent successfully:", customerEmailResult.status, customerEmailResult.text);
+                
+                // 2. Send email to owner
+                const ownerEmailResult = await emailjs.send(
+                    "service_ucfupx8",  // Your Service ID
+                    "template_wvcly9f",  // Owner Notification Template
+                    {
+                        to_email: "vivek.glamoursalon@gmail.com",
+                        customer_name: booking.customerName,
+                        customer_phone: booking.customerPhone,
+                        customer_email: booking.customerEmail,
+                        booking_id: booking.id,
+                        service: booking.serviceName,
+                        date: booking.date,
+                        time: booking.displayTime,
+                        therapist: booking.therapist || 'Any Available',
+                        price: `₹${booking.price}`,
+                        notes: booking.notes || "No special notes",
+                        booking_status: "New Booking",
+                        total_amount: `₹${booking.price}`
+                    }
+                );
+                
+                console.log("✅ Owner email sent successfully:", ownerEmailResult.status, ownerEmailResult.text);
+                
+                return true;
+                
+            } catch (error) {
+                console.error("❌ EmailJS Error Details:", {
+                    errorCode: error?.status || "Unknown",
+                    errorText: error?.text || "Unknown error",
+                    fullError: error
+                });
+                
+                // Provide user-friendly error messages
+                if (error?.text?.includes("Invalid login")) {
+                    showNotification("⚠️ Email service not configured properly. Please check EmailJS settings.", "warning");
+                } else if (error?.text?.includes("Template not found")) {
+                    showNotification("⚠️ Email templates not found. Please check template IDs.", "warning");
+                } else {
+                    showNotification(`⚠️ Email sending failed. Error: ${error?.text || "Unknown"}`, "warning");
+                }
+                
+                return false;
+            }
+        }
+        
+        // Test function for EmailJS
+        async function testEmailSetup() {
+            const testBooking = {
+                id: "TEST123",
+                customerName: "Test Customer",
+                customerPhone: "9876543210",
+                customerEmail: "test@example.com", // Use a real email for testing
+                serviceName: "Haircut & Styling",
+                date: "2024-12-25",
+                displayTime: "02:00 PM",
+                therapist: "Priya",
+                price: 499,
+                notes: "Test booking"
+            };
+            
+            showLoading(true);
+            try {
+                const result = await sendBookingNotifications(testBooking);
+                showNotification(result ? "✅ Test email sent successfully!" : "❌ Test email failed", result ? 'success' : 'error');
+            } catch (error) {
+                console.error("Test error:", error);
+                showNotification("Test failed: " + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Load sample data
+        function loadSampleBookings() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date(tomorrow);
+            dayAfter.setDate(dayAfter.getDate() + 1);
+            
+            allBookings = [
+                {
+                    id: 'GS' + Date.now().toString().slice(-8),
+                    customerName: 'Priya Sharma',
+                    customerPhone: '+91 9876543210',
+                    customerEmail: 'priya@example.com',
+                    service: 'haircut',
+                    serviceName: 'Haircut & Styling',
+                    date: today.toISOString().split('T')[0],
+                    time: '14:00',
+                    displayTime: '02:00 PM',
+                    therapist: 'Priya',
+                    price: 499,
+                    status: 'confirmed',
+                    bookingDate: new Date().toISOString()
+                },
+                {
+                    id: 'GS' + (Date.now() + 1000).toString().slice(-8),
+                    customerName: 'Rahul Verma',
+                    customerPhone: '+91 9876543211',
+                    customerEmail: 'rahul@example.com',
+                    service: 'facial',
+                    serviceName: 'Gold Facial',
+                    date: tomorrow.toISOString().split('T')[0],
+                    time: '16:00',
+                    displayTime: '04:00 PM',
+                    therapist: 'Meera',
+                    price: 1299,
+                    status: 'confirmed',
+                    bookingDate: new Date().toISOString()
+                },
+                {
+                    id: 'GS' + (Date.now() + 2000).toString().slice(-8),
+                    customerName: 'Anjali Patil',
+                    customerPhone: '+91 9876543212',
+                    customerEmail: 'anjali@example.com',
+                    service: 'spa',
+                    serviceName: 'Aromatherapy Spa',
+                    date: dayAfter.toISOString().split('T')[0],
+                    time: '18:00',
+                    displayTime: '06:00 PM',
+                    therapist: 'Anjali',
+                    price: 1499,
+                    status: 'confirmed',
+                    bookingDate: new Date().toISOString()
+                }
+            ];
+            
+            localStorage.setItem('glamourBookings', JSON.stringify(allBookings));
+        }
+        
+        // Offline detection
+        window.addEventListener('online', () => {
+            showNotification('You are back online', 'info');
+        });
+        
+        window.addEventListener('offline', () => {
+            showNotification('You are offline. Some features may not work.', 'warning');
+        });
+        
+        // Add to home screen for iOS
+        if (window.navigator.standalone === false) {
+            // iOS is in browser mode
+            showNotification('Add to home screen for better experience', 'info');
+        }
+    </script>
+    
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            // Register service worker
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('Service Worker registered with scope:', registration.scope);
+            }).catch(function(error) {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+        
+        // Create manifest.json content
+        const manifest = {
+            "name": "Glamour Salon & Spa",
+            "short_name": "Glamour Salon",
+            "description": "Book salon appointments instantly. View available slots and manage bookings.",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#f8f1e5",
+            "theme_color": "#d4a574",
+            "orientation": "portrait",
+            "icons": [
+                {
+                    "src": "icons/icon-72x72.png",
+                    "sizes": "72x72",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-128x128.png",
+                    "sizes": "128x128",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-144x144.png",
+                    "sizes": "144x144",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-152x152.png",
+                    "sizes": "152x152",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-384x384.png",
+                    "sizes": "384x384",
+                    "type": "image/png"
+                },
+                {
+                    "src": "icons/icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }
+            ]
+        };
+        
+        // Create manifest link
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
+        document.head.appendChild(manifestLink);
+    </script>
+</body>
+</html>
